@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NREGA Muster Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-gray-100 min-h-screen text-gray-800 font-sans pb-10">
+
+  <div class="max-w-md mx-auto bg-white min-h-screen shadow-md">
+    
+    <!-- Header -->
+    <div class="bg-blue-700 text-white p-4 shadow-sm">
+      <h1 class="text-xl font-bold">NREGA Muster Manager</h1>
+      <p class="text-xs text-blue-200">Worker & Muster Attendance Tracker</p>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="p-3 border-b bg-gray-50 flex gap-2">
+      <button onclick="switchTab('attendance')" id="btnTabAttendance" class="flex-1 py-2 text-xs font-bold rounded bg-blue-600 text-white">Haazri (Daily)</button>
+      <button onclick="switchTab('summary')" id="btnTabSummary" class="flex-1 py-2 text-xs font-bold rounded bg-gray-200 text-gray-700">Muster Hisaab</button>
+      <button onclick="switchTab('addWorker')" id="btnTabAddWorker" class="py-2 px-3 text-xs font-bold rounded bg-green-600 text-white">+ Worker/Muster</button>
+    </div>
+
+    <!-- Active Muster Selector -->
+    <div class="p-3 bg-blue-50 border-b flex justify-between items-center">
+      <label class="text-xs font-bold text-blue-900">Active Muster:</label>
+      <select id="musterSelect" onchange="changeMuster(this.value)" class="border p-1 text-xs font-bold rounded bg-white text-blue-900">
+        <!-- Dynamic Dropdown -->
+      </select>
+    </div>
+
+    <!-- TAB 1: DAILY ATTENDANCE -->
+    <div id="tabAttendance" class="p-4 space-y-3">
+      <div class="flex items-center justify-between bg-gray-50 p-2 rounded border">
+        <label class="text-xs font-bold">Tareekh Select Karein:</label>
+        <input type="date" id="dateInput" onchange="renderAttendance()" class="border p-1 text-xs rounded">
+      </div>
+      
+      <div id="workersAttendanceList" class="space-y-3">
+        <!-- Attendance Cards Here -->
+      </div>
+
+      <!-- SAVE ATTENDANCE BUTTON -->
+      <div id="saveAttendanceBox" class="pt-2 hidden">
+        <button onclick="saveDailyAttendance()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 rounded shadow text-sm flex items-center justify-center gap-2">
+          <span>💾</span> Save Today's Attendance
+        </button>
+      </div>
+    </div>
+
+    <!-- TAB 2: MUSTER HISAAB SUMMARY -->
+    <div id="tabSummary" class="p-4 space-y-3 hidden">
+      <div id="summaryMusterHeader" class="bg-blue-100 border border-blue-300 p-3 rounded-lg space-y-2">
+        <!-- Muster Info & Rate Input -->
+      </div>
+
+      <div id="workersSummaryList" class="space-y-3">
+        <!-- Individual Hisaab Here -->
+      </div>
+
+      <div id="grandTotalBox" class="bg-gray-800 text-white p-4 rounded-lg shadow-md space-y-2">
+        <!-- Grand Total Here -->
+      </div>
+    </div>
+
+    <!-- TAB 3: ADD WORKER & MUSTER -->
+    <div id="tabAddWorker" class="p-4 space-y-5 hidden">
+      <!-- Form 1: Naya Muster Roll -->
+      <form onsubmit="handleCreateMuster(event)" class="bg-gray-50 p-3 rounded-lg border space-y-2">
+        <h2 class="font-bold text-xs text-blue-800 border-b pb-1">1. Naya Muster Roll Banayein</h2>
+        <div>
+          <label class="block text-[11px] font-bold">Muster Roll No:</label>
+          <input type="text" id="newMusterNo" placeholder="e.g. 1024" class="w-full border p-1.5 text-xs rounded" required>
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold">Kitne Din Ka Muster Hai (Days):</label>
+          <input type="number" id="newMusterDays" placeholder="e.g. 14" value="14" class="w-full border p-1.5 text-xs rounded" required>
+        </div>
+        <button type="submit" class="w-full bg-blue-600 text-white font-bold py-1.5 rounded text-xs">+ Save Muster Roll</button>
+      </form>
+
+      <!-- Form 2: Naya Worker Add Karein -->
+      <form onsubmit="handleAddWorker(event)" class="bg-gray-50 p-3 rounded-lg border space-y-2">
+        <h2 class="font-bold text-xs text-green-800 border-b pb-1">2. Naya Worker Add Karein</h2>
+        <div>
+          <label class="block text-[11px] font-bold">Worker Ka Naam:</label>
+          <input type="text" id="newWorkerName" placeholder="e.g. Ramesh Kumar" class="w-full border p-1.5 text-xs rounded" required>
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold">Job Card No:</label>
+          <input type="text" id="newJobCard" placeholder="e.g. RJ-01-002-11" class="w-full border p-1.5 text-xs rounded" required>
+        </div>
+        <button type="submit" class="w-full bg-green-600 text-white font-bold py-1.5 rounded text-xs">+ Save Worker</button>
+      </form>
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
