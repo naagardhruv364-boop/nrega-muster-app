@@ -43,6 +43,7 @@ function populateMusterDropdown() {
 
 function changeMuster(val) {
   activeMusterId = val;
+  tempAttendance = {}; // Reset temp state on muster change
   renderAttendance();
   renderSummary();
 }
@@ -103,6 +104,18 @@ function handleAddWorker(e) {
   renderAttendance();
 }
 
+// Delete Worker Option
+function deleteWorker(workerId, workerName) {
+  if (confirm(`Kya aap "${workerName}" ko delete karna chahte hain?`)) {
+    workers = workers.filter(w => w.id !== workerId);
+    attendanceStore = attendanceStore.filter(a => a.workerId !== workerId);
+    delete tempAttendance[workerId];
+    saveData();
+    renderAttendance();
+    renderSummary();
+  }
+}
+
 // Render Daily Attendance Screen
 function renderAttendance() {
   const date = document.getElementById('dateInput').value;
@@ -118,10 +131,11 @@ function renderAttendance() {
 
   saveBox.classList.remove('hidden');
 
-  // Load saved state into temp state
   workers.forEach(w => {
-    const savedRecord = attendanceStore.find(a => a.date === date && a.musterId === activeMusterId && a.workerId === w.id);
-    tempAttendance[w.id] = savedRecord ? savedRecord.status : 'ABSENT';
+    if (!tempAttendance[w.id]) {
+      const savedRecord = attendanceStore.find(a => a.date === date && a.musterId === activeMusterId && a.workerId === w.id);
+      tempAttendance[w.id] = savedRecord ? savedRecord.status : 'ABSENT';
+    }
   });
 
   workers.forEach(w => {
@@ -130,9 +144,12 @@ function renderAttendance() {
     const card = document.createElement('div');
     card.className = 'bg-white p-3 rounded-lg shadow-sm border space-y-2';
     card.innerHTML = `
-      <div>
-        <div class="font-bold text-sm">${w.name}</div>
-        <div class="text-xs text-gray-400">${w.jobCard}</div>
+      <div class="flex justify-between items-start">
+        <div>
+          <div class="font-bold text-sm">${w.name}</div>
+          <div class="text-xs text-gray-400">${w.jobCard}</div>
+        </div>
+        <button onclick="deleteWorker('${w.id}', '${w.name}')" class="text-red-500 text-xs hover:bg-red-50 p-1 rounded font-bold" title="Delete Worker">🗑️ Delete</button>
       </div>
       <div class="grid grid-cols-3 gap-2">
         <button type="button" onclick="selectTempAttendance('${w.id}', 'REAL')" class="py-1.5 text-xs font-bold rounded ${status === 'REAL' ? 'bg-green-600 text-white' : 'bg-green-100 text-green-800'}">🟢 Real Work</button>
