@@ -6,8 +6,9 @@ let attendanceStore = JSON.parse(localStorage.getItem('nrega_attendance')) || []
 let activeMusterId = musters.length > 0 ? musters[0].id : '';
 let tempAttendance = {};
 
-// Set Today Date as Default
-document.getElementById('dateInput').valueAsDate = new Date();
+// Set Today Date as Default format YYYY-MM-DD
+const today = new Date().toISOString().split('T')[0];
+document.getElementById('dateInput').value = today;
 
 function init() {
   populateMusterDropdown();
@@ -128,17 +129,17 @@ function renderAttendance() {
     return;
   }
 
-  // STRICT CHECK: Is this date ALREADY SAVED?
+  // CHECK LOCK STATUS FOR SELECTED DATE & MUSTER
   const savedRecordsForDate = attendanceStore.filter(a => a.date === selectedDate && a.musterId === activeMusterId);
   const isDateLocked = savedRecordsForDate.length > 0;
 
   if (isDateLocked) {
-    // LOCK SCREEN VIEW
+    // LOCK SCREEN: Buttons remove and show Locked Badge
     saveBox.classList.add('hidden');
 
     let lockHtml = `
-      <div class="bg-green-100 border border-green-400 text-green-800 p-3 rounded-lg text-center font-bold text-xs mb-3 shadow-sm">
-        ✅ Tareekh ${selectedDate} Ki Haazri Saved & Locked Hai!
+      <div class="bg-green-100 border border-green-400 text-green-800 p-3 rounded-lg text-center font-bold text-xs mb-3 shadow-sm flex items-center justify-center gap-2">
+        <span>🔒</span> Is Tareekh (${selectedDate}) Ki Haazri Save Ho Chuki Hai!
       </div>
       <div class="space-y-2">
     `;
@@ -148,9 +149,9 @@ function renderAttendance() {
       const st = rec ? rec.status : 'ABSENT';
       
       let badge = '';
-      if(st === 'REAL') badge = '<span class="bg-green-600 text-white text-[11px] px-2 py-1 rounded font-bold">🟢 Real Work</span>';
-      else if(st === 'DUMMY') badge = '<span class="bg-blue-600 text-white text-[11px] px-2 py-1 rounded font-bold">🔵 Only Haazri</span>';
-      else badge = '<span class="bg-red-600 text-white text-[11px] px-2 py-1 rounded font-bold">🔴 Absent</span>';
+      if(st === 'REAL') badge = '<span class="bg-green-600 text-white text-[11px] px-2.5 py-1 rounded-full font-bold">🟢 Real Work</span>';
+      else if(st === 'DUMMY') badge = '<span class="bg-blue-600 text-white text-[11px] px-2.5 py-1 rounded-full font-bold">🔵 Only Haazri</span>';
+      else badge = '<span class="bg-red-600 text-white text-[11px] px-2.5 py-1 rounded-full font-bold">🔴 Absent</span>';
 
       lockHtml += `
         <div class="bg-white p-3 rounded-lg shadow-sm border flex justify-between items-center">
@@ -168,12 +169,12 @@ function renderAttendance() {
     return;
   }
 
-  // UNLOCKED VIEW (Fresh Attendance Input)
+  // UNLOCKED SCREEN: Show Input Buttons
   saveBox.classList.remove('hidden');
 
   workers.forEach(w => {
     if (!tempAttendance[w.id]) {
-      tempAttendance[w.id] = 'ABSENT'; // Default
+      tempAttendance[w.id] = 'ABSENT'; // Default fallback
     }
 
     const status = tempAttendance[w.id];
@@ -203,18 +204,32 @@ function selectTempAttendance(workerId, status) {
   renderAttendance();
 }
 
-// SAVE ACTION (Permanently Locks the date)
+// SAVE & PERMANENT LOCK FUNCTION
 function saveDailyAttendance() {
   const selectedDate = document.getElementById('dateInput').value;
 
+  if (!selectedDate) {
+    alert('Kripya valid date select karein!');
+    return;
+  }
+
+  // Clean existing records if any for this exact date & muster
+  attendanceStore = attendanceStore.filter(a => !(a.date === selectedDate && a.musterId === activeMusterId));
+
+  // Push fresh records
   workers.forEach(w => {
     const status = tempAttendance[w.id] || 'ABSENT';
-    attendanceStore.push({ date: selectedDate, musterId: activeMusterId, workerId: w.id, status });
+    attendanceStore.push({ 
+      date: selectedDate, 
+      musterId: activeMusterId, 
+      workerId: w.id, 
+      status: status 
+    });
   });
 
-  tempAttendance = {}; // Clear temp
+  tempAttendance = {}; // Reset temp selections
   saveData();
-  alert(`✅ Tareekh ${selectedDate} ki haazri successfully lock ho gayi!`);
+  alert(`✅ Tareekh ${selectedDate} ki haazri lock ho gayi hai!`);
   renderAttendance();
   renderSummary();
 }
@@ -298,7 +313,7 @@ function renderSummary() {
     <div class="text-xs font-bold border-b border-gray-600 pb-1">Muster #${activeMusterId} Final Hisaab</div>
     <div class="flex justify-between text-xs"><span>Total Govt Payment Aayegi:</span><span class="font-bold text-yellow-400">₹${grandGovt}</span></div>
     <div class="flex justify-between text-xs"><span>Majdooron Ko Dena Hai:</span><span class="font-bold text-green-400">₹${grandWorker}</span></div>
-    <div class="flex justify-between text-sm font-bold border-t border-gray-600 pt-1"><span>Aapka Total Profit:</span><span class="text-blue-400">₹${grandYour}</span></div>
+    <div class="flex justify-between text-sm font-bold border-t border-gray-600 pt-1"><span>Aapka Total Profit:</span><span class="text-blue-400">₹${yourShare}</span></div>
   `;
 }
 
