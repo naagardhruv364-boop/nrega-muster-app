@@ -6,6 +6,7 @@ let attendanceStore = JSON.parse(localStorage.getItem('nrega_attendance')) || []
 let activeMusterId = musters.length > 0 ? musters[0].id : '';
 let tempAttendance = {};
 
+// Set Today Date as Default
 document.getElementById('dateInput').valueAsDate = new Date();
 
 function init() {
@@ -116,7 +117,7 @@ function deleteWorker(workerId, workerName) {
 
 // Render Daily Attendance Screen
 function renderAttendance() {
-  const date = document.getElementById('dateInput').value;
+  const selectedDate = document.getElementById('dateInput').value;
   const listContainer = document.getElementById('workersAttendanceList');
   const saveBox = document.getElementById('saveAttendanceBox');
   listContainer.innerHTML = '';
@@ -127,22 +128,47 @@ function renderAttendance() {
     return;
   }
 
-  // CHECK IF ATTENDANCE IS ALREADY DONE FOR THIS DATE
-  const isAlreadyDone = attendanceStore.some(a => a.date === date && a.musterId === activeMusterId);
+  // STRICT CHECK: Is this date ALREADY SAVED?
+  const savedRecordsForDate = attendanceStore.filter(a => a.date === selectedDate && a.musterId === activeMusterId);
+  const isDateLocked = savedRecordsForDate.length > 0;
 
-  if (isAlreadyDone) {
-    listContainer.innerHTML = `
-      <div class="bg-green-50 border border-green-300 text-green-800 p-6 rounded-lg text-center space-y-2 my-4">
-        <div class="text-3xl">✅</div>
-        <div class="font-bold text-sm">Is tareekh (${date}) ki haazri lag chuki hai!</div>
-        <p class="text-xs text-green-600">Ek din me sirf ek hi baar haazri lagti hai. Agli haazri ke liye date change karein.</p>
-      </div>
-    `;
+  if (isDateLocked) {
+    // LOCK SCREEN VIEW
     saveBox.classList.add('hidden');
+
+    let lockHtml = `
+      <div class="bg-green-100 border border-green-400 text-green-800 p-3 rounded-lg text-center font-bold text-xs mb-3 shadow-sm">
+        ✅ Tareekh ${selectedDate} Ki Haazri Saved & Locked Hai!
+      </div>
+      <div class="space-y-2">
+    `;
+
+    workers.forEach(w => {
+      const rec = savedRecordsForDate.find(a => a.workerId === w.id);
+      const st = rec ? rec.status : 'ABSENT';
+      
+      let badge = '';
+      if(st === 'REAL') badge = '<span class="bg-green-600 text-white text-[11px] px-2 py-1 rounded font-bold">🟢 Real Work</span>';
+      else if(st === 'DUMMY') badge = '<span class="bg-blue-600 text-white text-[11px] px-2 py-1 rounded font-bold">🔵 Only Haazri</span>';
+      else badge = '<span class="bg-red-600 text-white text-[11px] px-2 py-1 rounded font-bold">🔴 Absent</span>';
+
+      lockHtml += `
+        <div class="bg-white p-3 rounded-lg shadow-sm border flex justify-between items-center">
+          <div>
+            <div class="font-bold text-sm text-gray-800">${w.name}</div>
+            <div class="text-xs text-gray-400">${w.jobCard}</div>
+          </div>
+          <div>${badge}</div>
+        </div>
+      `;
+    });
+
+    lockHtml += `</div>`;
+    listContainer.innerHTML = lockHtml;
     return;
   }
 
-  // If NOT DONE, show attendance buttons
+  // UNLOCKED VIEW (Fresh Attendance Input)
   saveBox.classList.remove('hidden');
 
   workers.forEach(w => {
@@ -157,7 +183,7 @@ function renderAttendance() {
     card.innerHTML = `
       <div class="flex justify-between items-start">
         <div>
-          <div class="font-bold text-sm">${w.name}</div>
+          <div class="font-bold text-sm text-gray-800">${w.name}</div>
           <div class="text-xs text-gray-400">${w.jobCard}</div>
         </div>
         <button onclick="deleteWorker('${w.id}', '${w.name}')" class="text-red-500 text-xs hover:bg-red-50 p-1 rounded font-bold" title="Delete Worker">🗑️ Delete</button>
@@ -177,18 +203,18 @@ function selectTempAttendance(workerId, status) {
   renderAttendance();
 }
 
-// SAVE ACTION (Locks after saving)
+// SAVE ACTION (Permanently Locks the date)
 function saveDailyAttendance() {
-  const date = document.getElementById('dateInput').value;
+  const selectedDate = document.getElementById('dateInput').value;
 
   workers.forEach(w => {
     const status = tempAttendance[w.id] || 'ABSENT';
-    attendanceStore.push({ date, musterId: activeMusterId, workerId: w.id, status });
+    attendanceStore.push({ date: selectedDate, musterId: activeMusterId, workerId: w.id, status });
   });
 
-  tempAttendance = {}; // Reset temp
+  tempAttendance = {}; // Clear temp
   saveData();
-  alert(`✅ ${date} ki haazri successfully locked ho gayi!`);
+  alert(`✅ Tareekh ${selectedDate} ki haazri successfully lock ho gayi!`);
   renderAttendance();
   renderSummary();
 }
@@ -253,7 +279,7 @@ function renderSummary() {
     const card = document.createElement('div');
     card.className = 'bg-white p-3 rounded-lg shadow-sm border text-xs space-y-2';
     card.innerHTML = `
-      <div class="font-bold text-sm border-b pb-1">${w.name} <span class="text-[10px] text-gray-400 font-normal">(${w.jobCard})</span></div>
+      <div class="font-bold text-sm border-b pb-1 text-gray-800">${w.name} <span class="text-[10px] text-gray-400 font-normal">(${w.jobCard})</span></div>
       <div class="grid grid-cols-3 text-center bg-gray-50 p-1.5 rounded">
         <div><span class="block text-gray-400">Real Work</span><span class="font-bold text-green-700">${realDays} Din</span></div>
         <div><span class="block text-gray-400">Dummy</span><span class="font-bold text-blue-700">${dummyDays} Din</span></div>
