@@ -7,6 +7,7 @@ let activeMusterId = musters.length > 0 ? musters[0].id : '';
 
 // Temporary selection store before clicking SAVE button
 let tempAttendance = {};
+let isEditMode = false;
 
 document.getElementById('dateInput').valueAsDate = new Date();
 
@@ -43,7 +44,8 @@ function populateMusterDropdown() {
 
 function changeMuster(val) {
   activeMusterId = val;
-  tempAttendance = {}; // Reset temp state on muster change
+  tempAttendance = {};
+  isEditMode = false;
   renderAttendance();
   renderSummary();
 }
@@ -116,6 +118,12 @@ function deleteWorker(workerId, workerName) {
   }
 }
 
+// Enable Edit Mode
+function enableEditMode() {
+  isEditMode = true;
+  renderAttendance();
+}
+
 // Render Daily Attendance Screen
 function renderAttendance() {
   const date = document.getElementById('dateInput').value;
@@ -129,20 +137,37 @@ function renderAttendance() {
     return;
   }
 
-  saveBox.classList.remove('hidden');
+  // Check if attendance for this date is ALREADY SAVED
+  const isAlreadySaved = attendanceStore.some(a => a.date === date && a.musterId === activeMusterId);
 
+  // Load temp states
   workers.forEach(w => {
-    if (!tempAttendance[w.id]) {
+    if (!tempAttendance[w.id] || !isEditMode) {
       const savedRecord = attendanceStore.find(a => a.date === date && a.musterId === activeMusterId && a.workerId === w.id);
       tempAttendance[w.id] = savedRecord ? savedRecord.status : 'ABSENT';
     }
   });
+
+  // Header Banner if already saved
+  if (isAlreadySaved && !isEditMode) {
+    const statusBanner = document.createElement('div');
+    statusBanner.className = 'bg-green-100 border border-green-400 text-green-800 p-2.5 rounded-lg text-xs font-bold flex justify-between items-center mb-2';
+    statusBanner.innerHTML = `
+      <span>✅ Is tareekh ki haazri saved hai.</span>
+      <button onclick="enableEditMode()" class="bg-green-700 text-white px-2.5 py-1 rounded text-[11px]">✏️ Edit Karein</button>
+    `;
+    listContainer.appendChild(statusBanner);
+  }
 
   workers.forEach(w => {
     const status = tempAttendance[w.id];
 
     const card = document.createElement('div');
     card.className = 'bg-white p-3 rounded-lg shadow-sm border space-y-2';
+    
+    // Disable buttons if already saved & not in edit mode
+    const isDisabled = isAlreadySaved && !isEditMode ? 'opacity-60 pointer-events-none' : '';
+
     card.innerHTML = `
       <div class="flex justify-between items-start">
         <div>
@@ -151,7 +176,7 @@ function renderAttendance() {
         </div>
         <button onclick="deleteWorker('${w.id}', '${w.name}')" class="text-red-500 text-xs hover:bg-red-50 p-1 rounded font-bold" title="Delete Worker">🗑️ Delete</button>
       </div>
-      <div class="grid grid-cols-3 gap-2">
+      <div class="grid grid-cols-3 gap-2 ${isDisabled}">
         <button type="button" onclick="selectTempAttendance('${w.id}', 'REAL')" class="py-1.5 text-xs font-bold rounded ${status === 'REAL' ? 'bg-green-600 text-white' : 'bg-green-100 text-green-800'}">🟢 Real Work</button>
         <button type="button" onclick="selectTempAttendance('${w.id}', 'DUMMY')" class="py-1.5 text-xs font-bold rounded ${status === 'DUMMY' ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-800'}">🔵 Only Haazri</button>
         <button type="button" onclick="selectTempAttendance('${w.id}', 'ABSENT')" class="py-1.5 text-xs font-bold rounded ${status === 'ABSENT' ? 'bg-red-600 text-white' : 'bg-red-100 text-red-800'}">🔴 Absent</button>
@@ -159,6 +184,13 @@ function renderAttendance() {
     `;
     listContainer.appendChild(card);
   });
+
+  // Save button logic
+  if (isAlreadySaved && !isEditMode) {
+    saveBox.classList.add('hidden');
+  } else {
+    saveBox.classList.remove('hidden');
+  }
 }
 
 // Temporary select status on button click
@@ -167,22 +199,24 @@ function selectTempAttendance(workerId, status) {
   renderAttendance();
 }
 
-// FINAL SAVE ACTION (Save Button Click Event)
+// FINAL SAVE ACTION
 function saveDailyAttendance() {
   const date = document.getElementById('dateInput').value;
 
   workers.forEach(w => {
     const status = tempAttendance[w.id] || 'ABSENT';
 
-    // Remove old record for this date & worker
+    // Remove old record for this date & worker (prevents duplicates)
     attendanceStore = attendanceStore.filter(a => !(a.date === date && a.musterId === activeMusterId && a.workerId === w.id));
 
     // Store new record
     attendanceStore.push({ date, musterId: activeMusterId, workerId: w.id, status });
   });
 
+  isEditMode = false;
   saveData();
   alert(`✅ Tareekh ${date} ki attendance save ho gayi!`);
+  renderAttendance();
   renderSummary();
 }
 
