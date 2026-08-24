@@ -4,101 +4,111 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NREGA Muster Tracker</title>
+  
+  <!-- APP LOGO / HOME SCREEN FAVICON (SVG HD Logo) -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%231d4ed8'/><path d='M50 18 C32 18 24 32 24 44 L76 44 C76 32 68 18 50 18 Z' fill='%23facc15'/><rect x='18' y='44' width='64' height='9' rx='3' fill='%23ca8a04'/><circle cx='50' cy='66' r='14' fill='%23ffffff'/><path d='M44 66 L48 70 L56 61' stroke='%2316a34a' stroke-width='4' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>">
+  
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%231d4ed8'/><path d='M50 18 C32 18 24 32 24 44 L76 44 C76 32 68 18 50 18 Z' fill='%23facc15'/><rect x='18' y='44' width='64' height='9' rx='3' fill='%23ca8a04'/><circle cx='50' cy='66' r='14' fill='%23ffffff'/><path d='M44 66 L48 70 L56 61' stroke='%2316a34a' stroke-width='4' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>">
+
+  <!-- Tailwind CSS & Custom Styles -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-gray-100 min-h-screen text-gray-800 font-sans pb-10">
+<body class="bg-gray-100 min-h-screen text-gray-800">
 
-  <div class="max-w-md mx-auto bg-white min-h-screen shadow-md">
-    
-    <!-- Header -->
-    <div class="bg-blue-700 text-white p-4 shadow-sm">
-      <h1 class="text-xl font-bold">NREGA Muster Manager</h1>
-      <p class="text-xs text-blue-200">Worker & Muster Attendance Tracker</p>
-    </div>
+  <!-- Top Header -->
+  <header class="bg-blue-700 text-white p-4 text-center shadow-md">
+    <h1 class="text-xl font-black tracking-wide">NREGA Muster Manager</h1>
+    <p class="text-xs text-blue-200">Worker & Muster Attendance Tracker</p>
+  </header>
+
+  <!-- Main Container -->
+  <div class="max-w-md mx-auto p-3 space-y-4">
 
     <!-- Navigation Tabs -->
-    <div class="p-3 border-b bg-gray-50 flex gap-2">
-      <button onclick="switchTab('attendance')" id="btnTabAttendance" class="flex-1 py-2 text-xs font-bold rounded bg-blue-600 text-white">Haazri (Daily)</button>
-      <button onclick="switchTab('summary')" id="btnTabSummary" class="flex-1 py-2 text-xs font-bold rounded bg-gray-200 text-gray-700">Muster Hisaab</button>
-      <button onclick="switchTab('addWorker')" id="btnTabAddWorker" class="py-2 px-3 text-xs font-bold rounded bg-green-600 text-white">+ Worker/Muster</button>
+    <div class="flex gap-1 bg-white p-1 rounded-lg shadow-sm">
+      <button id="btnTabAttendance" onclick="switchTab('attendance')" class="flex-1 py-2 text-xs font-bold rounded bg-blue-600 text-white">
+        Haazri (Daily)
+      </button>
+      <button id="btnTabSummary" onclick="switchTab('summary')" class="flex-1 py-2 text-xs font-bold rounded bg-gray-200 text-gray-700">
+        Muster Hisaab
+      </button>
+      <button id="btnTabAddWorker" onclick="switchTab('addWorker')" class="py-2 px-3 text-xs font-bold rounded bg-gray-200 text-gray-700">
+        + Worker/Muster
+      </button>
     </div>
 
     <!-- Active Muster Selector -->
-    <div class="p-3 bg-blue-50 border-b flex justify-between items-center">
-      <label class="text-xs font-bold text-blue-900">Active Muster:</label>
-      <select id="musterSelect" onchange="changeMuster(this.value)" class="border p-1 text-xs font-bold rounded bg-white text-blue-900">
-        <!-- Dynamic Dropdown -->
+    <div class="bg-blue-50 border border-blue-200 p-2.5 rounded-lg flex justify-between items-center text-xs">
+      <span class="font-bold text-blue-900">Active Muster:</span>
+      <select id="musterSelect" onchange="changeMuster(this.value)" class="bg-white border rounded px-2 py-1 font-bold text-gray-700 outline-none">
       </select>
     </div>
 
     <!-- TAB 1: DAILY ATTENDANCE -->
-    <div id="tabAttendance" class="p-4 space-y-3">
-      <div class="flex items-center justify-between bg-gray-50 p-2 rounded border">
-        <label class="text-xs font-bold">Tareekh Select Karein:</label>
-        <input type="date" id="dateInput" onchange="renderAttendance()" class="border p-1 text-xs rounded">
-      </div>
-      
-      <div id="workersAttendanceList" class="space-y-3">
-        <!-- Attendance Cards Here -->
+    <div id="tabAttendance" class="space-y-3">
+      <!-- Date Picker -->
+      <div class="bg-white p-3 rounded-lg shadow-sm border flex justify-between items-center text-xs">
+        <label for="dateInput" class="font-bold text-gray-700">Tareekh Select Karein:</label>
+        <input type="date" id="dateInput" onchange="renderAttendance()" class="border rounded p-1 font-bold bg-gray-50">
       </div>
 
-      <!-- SAVE ATTENDANCE BUTTON -->
-      <div id="saveAttendanceBox" class="pt-2 hidden">
-        <button onclick="saveDailyAttendance()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 rounded shadow text-sm flex items-center justify-center gap-2">
-          <span>💾</span> Save Today's Attendance
+      <!-- Workers Attendance List -->
+      <div id="workersAttendanceList" class="space-y-2"></div>
+
+      <!-- Save Button Container -->
+      <div id="saveAttendanceBox" class="hidden pt-2">
+        <button onclick="saveDailyAttendance()" class="w-full bg-green-600 hover:bg-green-700 text-white py-2.5 rounded-lg font-bold text-sm shadow-md flex items-center justify-center gap-2">
+          💾 Save Today's Attendance
         </button>
       </div>
     </div>
 
-    <!-- TAB 2: MUSTER HISAAB SUMMARY -->
-    <div id="tabSummary" class="p-4 space-y-3 hidden">
-      <div id="summaryMusterHeader" class="bg-blue-100 border border-blue-300 p-3 rounded-lg space-y-2">
-        <!-- Muster Info & Rate Input -->
-      </div>
-
-      <div id="workersSummaryList" class="space-y-3">
-        <!-- Individual Hisaab Here -->
-      </div>
-
-      <div id="grandTotalBox" class="bg-gray-800 text-white p-4 rounded-lg shadow-md space-y-2">
-        <!-- Grand Total Here -->
-      </div>
+    <!-- TAB 2: MUSTER SUMMARY & HISAAB -->
+    <div id="tabSummary" class="hidden space-y-3">
+      <div id="summaryMusterHeader" class="bg-white p-3 rounded-lg shadow-sm border"></div>
+      <div id="workersSummaryList" class="space-y-2"></div>
+      <div id="grandTotalBox" class="bg-gray-800 text-white p-3 rounded-lg shadow-md space-y-1"></div>
     </div>
 
     <!-- TAB 3: ADD WORKER & MUSTER -->
-    <div id="tabAddWorker" class="p-4 space-y-5 hidden">
-      <!-- Form 1: Naya Muster Roll -->
-      <form onsubmit="handleCreateMuster(event)" class="bg-gray-50 p-3 rounded-lg border space-y-2">
-        <h2 class="font-bold text-xs text-blue-800 border-b pb-1">1. Naya Muster Roll Banayein</h2>
-        <div>
-          <label class="block text-[11px] font-bold">Muster Roll No:</label>
-          <input type="text" id="newMusterNo" placeholder="e.g. 1024" class="w-full border p-1.5 text-xs rounded" required>
+    <div id="tabAddWorker" class="hidden space-y-4">
+      <!-- Create Muster -->
+      <form onsubmit="handleCreateMuster(event)" class="bg-white p-3 rounded-lg shadow-sm border space-y-2">
+        <div class="font-bold text-xs text-blue-900 border-b pb-1">➕ Naya Muster Add Karein</div>
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <div>
+            <label class="block text-gray-600 font-bold mb-1">Muster No:</label>
+            <input type="text" id="newMusterNo" placeholder="e.g. 23" required class="w-full border rounded p-1.5 bg-gray-50">
+          </div>
+          <div>
+            <label class="block text-gray-600 font-bold mb-1">Kul Din (Days):</label>
+            <input type="number" id="newMusterDays" value="14" required class="w-full border rounded p-1.5 bg-gray-50">
+          </div>
         </div>
-        <div>
-          <label class="block text-[11px] font-bold">Kitne Din Ka Muster Hai (Days):</label>
-          <input type="number" id="newMusterDays" placeholder="e.g. 14" value="14" class="w-full border p-1.5 text-xs rounded" required>
-        </div>
-        <button type="submit" class="w-full bg-blue-600 text-white font-bold py-1.5 rounded text-xs">+ Save Muster Roll</button>
+        <button type="submit" class="w-full bg-blue-600 text-white py-1.5 text-xs font-bold rounded">Create Muster</button>
       </form>
 
-      <!-- Form 2: Naya Worker Add Karein -->
-      <form onsubmit="handleAddWorker(event)" class="bg-gray-50 p-3 rounded-lg border space-y-2">
-        <h2 class="font-bold text-xs text-green-800 border-b pb-1">2. Naya Worker Add Karein</h2>
-        <div>
-          <label class="block text-[11px] font-bold">Worker Ka Naam:</label>
-          <input type="text" id="newWorkerName" placeholder="e.g. Ramesh Kumar" class="w-full border p-1.5 text-xs rounded" required>
+      <!-- Add Worker -->
+      <form onsubmit="handleAddWorker(event)" class="bg-white p-3 rounded-lg shadow-sm border space-y-2">
+        <div class="font-bold text-xs text-green-900 border-b pb-1">➕ Naya Worker Add Karein</div>
+        <div class="space-y-2 text-xs">
+          <div>
+            <label class="block text-gray-600 font-bold mb-1">Worker Ka Naam:</label>
+            <input type="text" id="newWorkerName" placeholder="e.g. Ramesh" required class="w-full border rounded p-1.5 bg-gray-50">
+          </div>
+          <div>
+            <label class="block text-gray-600 font-bold mb-1">Job Card No / ID:</label>
+            <input type="text" id="newJobCard" placeholder="e.g. 102" required class="w-full border rounded p-1.5 bg-gray-50">
+          </div>
         </div>
-        <div>
-          <label class="block text-[11px] font-bold">Job Card No:</label>
-          <input type="text" id="newJobCard" placeholder="e.g. RJ-01-002-11" class="w-full border p-1.5 text-xs rounded" required>
-        </div>
-        <button type="submit" class="w-full bg-green-600 text-white font-bold py-1.5 rounded text-xs">+ Save Worker</button>
+        <button type="submit" class="w-full bg-green-600 text-white py-1.5 text-xs font-bold rounded">Add Worker</button>
       </form>
     </div>
 
   </div>
 
-  <script src="app.js"></script>
+  <!-- JavaScript File Connection with Cache Busting -->
+  <script src="app.js?v=2.0"></script>
 </body>
 </html>
